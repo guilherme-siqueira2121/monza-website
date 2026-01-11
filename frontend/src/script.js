@@ -1,5 +1,11 @@
-// api client
+// ============================================
+// API CLIENT
+// ============================================
 const API_URL = 'http://localhost:8080/api';
+let navigationHistoty = [];
+
+const app = document.getElementById('app');
+const breadcrumb = document.getElementById('breadcrumb');
 
 const api = {
     async getBoards() {
@@ -78,7 +84,9 @@ const api = {
     }
 };
 
-// user management
+// ============================================
+// USER MANAGEMENT
+// ============================================
 function getCurrentUser() {
     let user = localStorage.getItem('forumUser');
     if (!user) {
@@ -94,10 +102,9 @@ function getCurrentUser() {
     return JSON.parse(user);
 }
 
-// view rendering
-const app = document.getElementById('app');
-const breadcrumb = document.getElementById('breadcrumb');
-
+// ============================================
+// VIEW RENDERING
+// ============================================
 function setBreadcrumb(items) {
     breadcrumb.innerHTML = items.map((item, i) => {
         if (i === items.length - 1) {
@@ -115,7 +122,9 @@ function showError(message) {
     app.innerHTML = `<div class="error">${message}</div>`;
 }
 
-// boards view
+// ============================================
+// BOARDS VIEW
+// ============================================
 async function showBoards() {
     showLoading();
     setBreadcrumb([{ label: 'Boards', view: 'boards' }]);
@@ -140,7 +149,9 @@ async function showBoards() {
     }
 }
 
-// threads view
+// ============================================
+// THREADS VIEW
+// ============================================
 async function showThreads(boardId, boardName) {
     showLoading();
     setBreadcrumb([
@@ -230,7 +241,9 @@ async function handleCreateThread(event, boardId) {
     }
 }
 
-// posts view
+// ============================================
+// POSTS VIEW
+// ============================================
 async function showPosts(threadId) {
     showLoading();
     
@@ -319,7 +332,9 @@ async function handleCreatePost(event, threadId) {
     }
 }
 
-// thread actions
+// ============================================
+// THREAD ACTIONS
+// ============================================
 async function togglePin(threadId, isPinned) {
     try {
         if (isPinned) {
@@ -346,7 +361,9 @@ async function toggleLock(threadId, isLocked) {
     }
 }
 
-// navigation
+// ============================================
+// NAVIGATION
+// ============================================
 function navigate(view, id) {
     if (view === 'boards') {
         showBoards();
@@ -356,7 +373,41 @@ function navigate(view, id) {
     }
 }
 
-// init
-showBoards();
+// ============================================
+// INIT
+// ============================================
+// header navigation
+function navigateHome() {
+    navigationHistory = [];
+    updateHeaderButtons();
+    showBoards();
+}
 
-// -
+function navigateBack() {
+    if (navigationHistory.length > 0) {
+        const prev = navigationHistory.pop();
+        updateHeaderButtons();
+
+        if (prev.type === 'boards') {
+            showBoards();
+        } else if (prev.type === 'threads') {
+            showThreads(prev.boardId, prev.boardName);
+        }
+    }
+}
+
+function updateHeaderButtons() {
+    const btnBack = document.getElementById('btnBack');
+    if (navigationHistoty.length > 0) {
+        btnBack.style.display = 'inline-block';
+    } else {
+        btnBack.style.display = 'none';
+    }
+}
+
+function addToHistory(type, data = {}) {
+    navigationHistoty.push({ type, ...data });
+    updateHeaderButtons();
+}
+
+showBoards();

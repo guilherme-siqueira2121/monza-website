@@ -5,36 +5,42 @@
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: #f5f5f5;
-    color: #333;
+    font-family: Georgia, 'Times New Roman', serif;
+    background: #f8f9fa;
+    color: #222;
     line-height: 1.6;
 }
 
 header {
-    background: #2c3e50;
-    color: white;
-    padding: 1.5rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    background: #fff;
+    border-bottom: 1px solid #a2a9b1;
+    padding: 1rem 1.5rem;
 }
 
 header h1 {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
+    font-weight: normal;
+    color: #000;
     margin-bottom: 0.5rem;
 }
 
-#breadcrumb {
-    font-size: 0.9rem;
-    color: #bdc3c7;
+.header-nav {
+    display: flex;
+    gap: 0.5rem;
 }
 
-#breadcrumb a {
-    color: #3498db;
-    text-decoration: none;
+.header-nav button {
+    padding: 0.4rem 0.8rem;
+    background: #f8f9fa;
+    border: 1px solid #a2a9b1;
+    color: #202122;
+    font-size: 0.85rem;
+    font-family: sans-serif;
+    cursor: pointer;
 }
 
-#breadcrumb a:hover {
-    text-decoration: underline;
+.header-nav button:hover {
+    background: #eaecf0;
 }
 
 main {
@@ -43,7 +49,7 @@ main {
     padding: 0 1rem;
 }
 
-/* boards */
+/* Boards */
 .board-list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -80,7 +86,7 @@ main {
     font-size: 0.85rem;
 }
 
-/* threads */
+/* Threads */
 .thread-header {
     display: flex;
     justify-content: space-between;
@@ -151,7 +157,7 @@ main {
     font-size: 0.9rem;
 }
 
-/* posts */
+/* Posts */
 .post-list {
     display: flex;
     flex-direction: column;
@@ -193,7 +199,7 @@ main {
     line-height: 1.6;
 }
 
-/* forms */
+/* Forms */
 .form-container {
     background: white;
     padding: 2rem;
@@ -228,7 +234,7 @@ textarea {
     resize: vertical;
 }
 
-/* buttons */
+/* Buttons */
 button {
     padding: 0.75rem 1.5rem;
     border: none;
@@ -286,14 +292,14 @@ button {
     flex-wrap: wrap;
 }
 
-/* loading */
+/* Loading */
 .loading {
     text-align: center;
     padding: 3rem;
     color: #95a5a6;
 }
 
-/* error */
+/* Error */
 .error {
     background: #fee;
     color: #c00;
@@ -302,12 +308,12 @@ button {
     margin-bottom: 1rem;
 }
 
-/* hide class */
+/* Hide class */
 .hidden {
     display: none;
 }
 
-/* responsive */
+/* Responsive */
 @media (max-width: 768px) {
     .board-list {
         grid-template-columns: 1fr;
@@ -318,4 +324,22 @@ button {
         align-items: flex-start;
         gap: 1rem;
     }
+}
+
+.breadcrumb {
+    max-width: 1200px;
+    margin: 1rem auto;
+    padding: 0 1rem;
+    font-family: Georgia, serif;
+    font-size: 0.95rem;
+    color: #54595d;
+}
+
+.breadcrumb a {
+    color: #0645ad;
+    text-decoration: none;
+}
+
+.breadcrumb a:hover {
+    text-decoration: underline;
 }
