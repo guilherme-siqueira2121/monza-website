@@ -13,21 +13,6 @@ public class App {
 
         System.out.println("O forum API está rodando!");
     }
-
-    // config CORS
-    @Bean
-    public WebMvcConfigurer corsConfigurer() {
-        return new WebMvcConfigurer() {
-            @Override
-            public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/api/**")
-                        .allowedOriginPatterns("*") // ⬅️ MUDOU DE allowedOrigins PARA allowedOriginPatterns
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
-                        .allowedHeaders("*")
-                        .allowCredentials(true);
-            }
-        };
-    }
 }
 
 // -

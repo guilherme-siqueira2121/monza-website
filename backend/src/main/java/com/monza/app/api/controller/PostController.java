@@ -62,7 +62,7 @@ public class PostController {
 
         UserResponse authorResponse = author != null ?
                 new UserResponse(author.getId(), author.getUsername(),
-                        author.getUserCode(), author.getCreatedAt()) : null;
+                        author.getUserCode(), author.getRole(), author.getCreatedAt()) : null;
 
         return new PostResponse(
                 post.getId(),

@@ -29,6 +29,7 @@ public class UserController {
                     user.getId(),
                     user.getUsername(),
                     user.getUserCode(),
+                    user.getRole(),
                     user.getCreatedAt()
             );
 
@@ -55,6 +56,7 @@ public class UserController {
                             user.getId(),
                             user.getUsername(),
                             user.getUserCode(),
+                            user.getRole(),
                             user.getCreatedAt()
                     );
 
@@ -72,6 +74,7 @@ public class UserController {
                             user.getId(),
                             user.getUsername(),
                             user.getUserCode(),
+                            user.getRole(),
                             user.getCreatedAt()
                     );
                     return ResponseEntity.ok(response);

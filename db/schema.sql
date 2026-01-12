@@ -3,14 +3,21 @@ CREATE TABLE users (
     id BIGSERIAL PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
     user_code VARCHAR(10) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role VARCHAR(20) NOT NULL DEFAULT 'USER',
+    enabled BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT chk_username_not_empty CHECK (LENGTH(TRIM(username)) > 0),
-    CONSTRAINT chk_user_code_format CHECK (user_code ~ '^USR[0-9]{6}$')
+    CONSTRAINT chk_user_code_format CHECK (user_code ~ '^USR[0-9]{6}$'),
+    CONSTRAINT chk_user_role CHECK (role IN ('USER', 'ADMIN', 'MODERATOR'))
 );
 
 COMMENT ON TABLE users IS 'Usuarios do forum';
 COMMENT ON COLUMN users.user_code IS 'Codigo unico gerado (ex: USR482910)';
+COMMENT ON COLUMN users.password IS 'Hash BCrypt da senha do usuário';
+COMMENT ON COLUMN users.role IS 'Papel do usuário no sistema (USER, ADMIN, MODERATOR)';
+COMMENT ON COLUMN users.enabled IS 'Indica se a conta está ativa';
 
 -- table boards
 CREATE TABLE boards (
@@ -83,6 +90,9 @@ CREATE INDEX idx_threads_board_count
 CREATE INDEX idx_posts_thread_count
     ON posts(thread_id);
 
+CREATE INDEX idx_users_role
+    ON users(role);
+
 -- seed
 INSERT INTO boards (name, title, description) VALUES
     ('/tech', 'Technology', 'Discussoes sobre tecnologia, programacao e desenvolvimento'),
@@ -91,8 +101,13 @@ INSERT INTO boards (name, title, description) VALUES
     ('/music', 'Music', 'Musica, artistas e recomendacoes'),
     ('/movies', 'Movies & TV', 'Filmes, series e entretenimento');
 
-INSERT INTO users (username, user_code) VALUES
-    ('Admin', 'USR000001');
+-- admin
+INSERT INTO users (username, user_code, password, role, enabled) VALUES
+    ('Admin',
+     'USR000001',
+     '$2a$10$kR5GJqO68JlP.JgyFhVP6u.ysZYr09VSndgRMFXtixBnRgQZjJb0q',  -- admin123
+     'ADMIN',
+     true);
 
 INSERT INTO threads (board_id, user_id, title, content, is_pinned) VALUES
     (1, 1, 'Bem-vindo ao /tech!', 'Este e o board de tecnologia. Compartilhe conhecimento e faca perguntas!', true);

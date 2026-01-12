@@ -4,42 +4,57 @@ import com.monza.app.domain.User;
 import com.monza.app.persistence.entity.UserEntity;
 import com.monza.app.persistence.mapper.UserMapper;
 import com.monza.app.persistence.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.Random;
 
+
 @Service
 public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
     private final Random random = new Random();
 
-    public UserService(UserRepository userRepository, UserMapper userMapper) {
+    public UserService(UserRepository userRepository, UserMapper userMapper,
+                       PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    // create new user
+    // create user with password
     @Transactional
-    public User createUser(String username) {
+    public User createUserWithPassword(String username, String password) {
         if (username == null || username.trim().isEmpty()) {
             throw new IllegalArgumentException("Username não pode ser vazio");
+        }
+        if (password == null || password.length() < 6) {
+            throw new IllegalArgumentException("Senha deve ter pelo menos 6 caracteres");
         }
         if (userRepository.existsByUsername(username)) {
             throw new IllegalArgumentException("Username já existe");
         }
 
         String userCode = generateUniqueUserCode();
+        String encodedPassword = passwordEncoder.encode(password);
 
-        User user = new User(username.trim(), userCode);
+        User user = new User(username.trim(), userCode, encodedPassword);
         user.validate();
 
         UserEntity entity = userMapper.toEntity(user);
         UserEntity saved = userRepository.save(entity);
 
         return userMapper.toDomain(saved);
+    }
+
+    // create user with default password
+    @Transactional
+    public User createUser(String username) {
+        return createUserWithPassword(username, "changeme123");
     }
 
     // generate unique code
