@@ -9,16 +9,18 @@ public class Post {
     private String content;
     private Long replyToPostId; // null if not for reply
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     // constructor
     public Post(Long id, Long threadId, Long userId, String content,
-                Long replyToPostId, LocalDateTime createdAt) {
+                Long replyToPostId, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.threadId = threadId;
         this.userId = userId;
         this.content = content;
         this.replyToPostId = replyToPostId;
         this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
     // constructor2
@@ -44,9 +46,12 @@ public class Post {
     public String getContent() {return content;}
     public Long getReplyToPostId() {return replyToPostId;}
     public LocalDateTime getCreatedAt() {return createdAt;}
+    public LocalDateTime getUpdatedAt() {return updatedAt;}
 
     // setters
     public void setId(Long id) {this.id = id;}
+    public void setContent(String content) {this.content = content;}
+    public void setUpdatedAt(LocalDateTime updatedAt) {this.updatedAt = updatedAt;}
 }
 
 // -

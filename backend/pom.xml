@@ -5,10 +5,6 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.example</groupId>
-    <artifactId>backend</artifactId>
-    <version>0.1.0</version>
-
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -16,18 +12,23 @@
         <relativePath/>
     </parent>
 
+    <groupId>com.example</groupId>
+    <artifactId>backend</artifactId>
+    <version>0.1.0</version>
+
     <properties>
         <java.version>21</java.version>
     </properties>
 
     <dependencies>
+
         <!-- Web / REST -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- JPA -->
+        <!-- JPA / Hibernate -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -40,7 +41,7 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Spring Security -->
+        <!-- Security -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
@@ -65,11 +66,32 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Validação -->
+        <!-- Validation (Jakarta Validation / Hibernate Validator) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
+
+        <!-- Testes -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Testcontainers (BOM) -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -80,4 +102,5 @@
             </plugin>
         </plugins>
     </build>
+
 </project>

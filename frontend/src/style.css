@@ -235,6 +235,23 @@ main {
     border-bottom: 1px solid #ecf0f1;
 }
 
+.post-header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.post-actions {
+    display: flex;
+    gap: 0.3rem;
+}
+
+.post-edited {
+    color: #95a5a6;
+    font-size: 0.8rem;
+    font-style: italic;
+}
+
 .post-author {
     font-weight: 600;
     color: #2c3e50;

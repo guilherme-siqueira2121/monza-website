@@ -14,13 +14,11 @@
             <div id="breadcrumb" class="breadcrumb"></div>
         </div>
         <div class="header-right" id="userSection">
-            <!-- Será preenchido pelo JavaScript -->
         </div>
     </div>
 </header>
 
 <main id="app">
-    <!-- Conteúdo dinâmico será inserido aqui -->
 </main>
 
 <!-- Modal de Login/Registro -->
@@ -28,6 +26,14 @@
     <div class="modal-content">
         <span class="close" onclick="closeAuthModal()">&times;</span>
         <div id="authContent"></div>
+    </div>
+</div>
+
+<!-- Modal de Edição de Post -->
+<div id="editPostModal" class="modal hidden">
+    <div class="modal-content">
+        <span class="close" onclick="closeEditPostModal()">&times;</span>
+        <div id="editPostContent"></div>
     </div>
 </div>
 

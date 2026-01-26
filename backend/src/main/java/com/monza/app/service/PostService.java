@@ -10,6 +10,7 @@ import com.monza.app.persistence.repository.ForumThreadRepository;
 import com.monza.app.persistence.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -71,6 +72,64 @@ public class PostService {
     }
 
     public long countPostsByThread(Long threadId) {return postRepository.countByThreadId(threadId);}
+
+    // edit post
+    @Transactional
+    public Post updatePost(Long postId, Long userId, String content, String userRole) {
+        PostEntity postEntity = postRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("Post não existe"));
+
+        // verify permission
+        if (!canEditPost(postEntity, userId, userRole)) {
+            throw new IllegalArgumentException("Sem permissão para editar este post");
+        }
+
+        // validate content
+        Post post = postMapper.toDomain(postEntity);
+        post.setContent(content);
+        post.validate();
+
+        // update
+        postEntity.setContent(content);
+        postEntity.setUpdatedAt(LocalDateTime.now());
+        PostEntity saved = postRepository.save(postEntity);
+
+        return postMapper.toDomain(saved);
+    }
+
+    // delete post
+    @Transactional
+    public void deletePost(Long postId, Long userId, String userRole) {
+        PostEntity postEntity = postRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("Post não existe"));
+
+        // verify permission
+        if (!canDeletePost(postEntity, userId, userRole)) {
+            throw new IllegalArgumentException("Sem permissão para deletar este post");
+        }
+
+        postRepository.delete(postEntity);
+    }
+
+    // verify edit permission
+    private boolean canEditPost(PostEntity post, Long userId, String userRole) {
+        // admin can edit any post
+        if ("ADMIN".equals(userRole)) {
+            return true;
+        }
+        // user can only edit own posts
+        return post.getUserId().equals(userId);
+    }
+
+    // verify delete permission
+    private boolean canDeletePost(PostEntity post, Long userId, String userRole) {
+        // admin can delete any post
+        if ("ADMIN".equals(userRole)) {
+            return true;
+        }
+        // user can only delete own posts
+        return post.getUserId().equals(userId);
+    }
 }
 
 // -

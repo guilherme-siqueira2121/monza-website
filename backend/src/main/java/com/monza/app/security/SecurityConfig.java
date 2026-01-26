@@ -53,6 +53,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/threads").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/posts").authenticated()
 
+                        // Editar e deletar posts precisa estar autenticado
+                        .requestMatchers(HttpMethod.PUT, "/api/posts/*").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/posts/*").authenticated()
+
                         // Pin/Lock só para ADMIN ou MODERATOR
                         .requestMatchers("/api/threads/*/pin").hasAnyRole("ADMIN", "MODERATOR")
                         .requestMatchers("/api/threads/*/unpin").hasAnyRole("ADMIN", "MODERATOR")

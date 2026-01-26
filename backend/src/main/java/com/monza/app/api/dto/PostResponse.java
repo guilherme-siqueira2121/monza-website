@@ -7,15 +7,17 @@ public class PostResponse {
     private String content;
     private UserResponse author;
     private Long replyToPostId;
-    private LocalDateTime createAt;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     // constructor
-    public PostResponse(Long id, String content, UserResponse author, Long replyToPostId, LocalDateTime createAt) {
+    public PostResponse(Long id, String content, UserResponse author, Long replyToPostId, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.content = content;
         this.author = author;
         this.replyToPostId = replyToPostId;
-        this.createAt = createAt;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
     // getters
@@ -23,7 +25,8 @@ public class PostResponse {
     public String getContent() {return content;}
     public UserResponse getAuthor() {return author;}
     public Long getReplyToPostId() {return replyToPostId;}
-    public LocalDateTime getCreateAt() {return createAt;}
+    public LocalDateTime getCreatedAt() {return createdAt;}
+    public LocalDateTime getUpdatedAt() {return updatedAt;}
 }
 
 // -

@@ -26,6 +26,9 @@ public class PostEntity {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
     //constructor
     public PostEntity() {}
 
@@ -42,6 +45,8 @@ public class PostEntity {
     public void setReplyToPostId(Long replyToPostId) {this.replyToPostId = replyToPostId;}
     public LocalDateTime getCreatedAt() {return createdAt;}
     public void setCreatedAt(LocalDateTime createdAt) {this.createdAt = createdAt;}
+    public LocalDateTime getUpdatedAt() {return updatedAt;}
+    public void setUpdatedAt(LocalDateTime updatedAt) {this.updatedAt = updatedAt;}
 }
 
 // -

@@ -210,6 +210,20 @@ class API {
         });
         return response.json();
     }
+
+    static async updatePost(postId, content) {
+        const response = await this.request(`/posts/${postId}`, {
+            method: 'PUT',
+            body: JSON.stringify({ content })
+        });
+        return response.json();
+    }
+
+    static async deletePost(postId) {
+        await this.request(`/posts/${postId}`, {
+            method: 'DELETE'
+        });
+    }
 }
 
 // ============================================
@@ -563,15 +577,32 @@ async function showPosts(threadId) {
                     <div class="post-content">${escapeHtml(thread.content)}</div>
                 </div>
 
-                ${posts.map(post => `
-                    <div class="post-item">
-                        <div class="post-header">
-                            <span class="post-author">${escapeHtml(post.author?.username || 'Anônimo')}</span>
-                            <span class="post-date">${formatDateTime(post.createAt)}</span>
+                ${posts.map(post => {
+                    const canEdit = user && (user.role === 'ADMIN' || post.author?.id === user.userId);
+                    const canDelete = user && (user.role === 'ADMIN' || post.author?.id === user.userId);
+                    
+                    // Debug - remover depois
+                    console.log('Post:', post);
+                    console.log('User:', user);
+                    console.log('Can Edit:', canEdit, 'Post Author ID:', post.author?.id, 'User ID:', user?.userId);
+                    
+                    return `
+                        <div class="post-item" data-post-id="${post.id}">
+                            <div class="post-header">
+                                <div class="post-header-left">
+                                    <span class="post-author">${escapeHtml(post.author?.username || 'Anônimo')}</span>
+                                    <span class="post-date">${formatDateTime(post.createdAt || post.createAt)}</span>
+                                    ${post.updatedAt ? `<span class="post-edited">(editado)</span>` : ''}
+                                </div>
+                                <div class="post-actions">
+                                    ${canEdit ? `<button class="btn-warning btn-small" onclick="showEditPostForm(${post.id}, '${escapeHtml(post.content)}')">✏️</button>` : ''}
+                                    ${canDelete ? `<button class="btn-danger btn-small" onclick="handleDeletePost(${post.id})">🗑️</button>` : ''}
+                                </div>
+                            </div>
+                            <div class="post-content" id="post-content-${post.id}">${escapeHtml(post.content)}</div>
                         </div>
-                        <div class="post-content">${escapeHtml(post.content)}</div>
-                    </div>
-                `).join('')}
+                    `;
+                }).join('')}
             </div>
 
             ${!thread.locked ? `
@@ -611,6 +642,77 @@ async function handleCreatePost(event, threadId) {
         navigate('posts', { threadId });
     } catch (error) {
         showNotification(error.message || 'Erro ao criar post', 'error');
+    }
+}
+
+// ============================================
+// POST ACTIONS
+// ============================================
+function showEditPostForm(postId, currentContent) {
+    const editPostContent = document.getElementById('editPostContent');
+    
+    editPostContent.innerHTML = `
+        <h3>Editar Post</h3>
+        <form onsubmit="handleEditPost(event, ${postId})">
+            <div class="form-group">
+                <label>Conteúdo</label>
+                <textarea name="content" required rows="6">${currentContent}</textarea>
+            </div>
+            <div class="btn-group">
+                <button type="submit" class="btn-primary">Salvar</button>
+                <button type="button" class="btn-secondary" onclick="closeEditPostModal()">Cancelar</button>
+            </div>
+        </form>
+    `;
+    
+    document.getElementById('editPostModal').classList.remove('hidden');
+}
+
+function closeEditPostModal() {
+    document.getElementById('editPostModal').classList.add('hidden');
+}
+
+async function handleEditPost(event, postId) {
+    event.preventDefault();
+    const form = event.target;
+    
+    try {
+        await API.updatePost(postId, form.content.value);
+        showNotification('Post editado com sucesso!', 'success');
+        closeEditPostModal();
+        
+        // Atualiza o conteúdo do post na página sem recarregar
+        const postContent = document.getElementById(`post-content-${postId}`);
+        if (postContent) {
+            postContent.textContent = form.content.value;
+        }
+        
+        // Recarrega a página para mostrar o timestamp de edição
+        navigate('posts', currentView.data);
+    } catch (error) {
+        showNotification(error.message || 'Erro ao editar post', 'error');
+    }
+}
+
+async function handleDeletePost(postId) {
+    if (!confirm('Tem certeza que deseja deletar este post?')) {
+        return;
+    }
+    
+    try {
+        await API.deletePost(postId);
+        showNotification('Post deletado com sucesso!', 'success');
+        
+        // Remove o post da página sem recarregar
+        const postElement = document.querySelector(`[data-post-id="${postId}"]`);
+        if (postElement) {
+            postElement.remove();
+        } else {
+            // Se não encontrar, recarrega a página
+            navigate('posts', currentView.data);
+        }
+    } catch (error) {
+        showNotification(error.message || 'Erro ao deletar post', 'error');
     }
 }
 

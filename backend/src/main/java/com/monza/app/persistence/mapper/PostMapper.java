@@ -16,7 +16,8 @@ public class PostMapper {
                 entity.getUserId(),
                 entity.getContent(),
                 entity.getReplyToPostId(),
-                entity.getCreatedAt()
+                entity.getCreatedAt(),
+                entity.getUpdatedAt()
         );
     }
 
@@ -30,6 +31,7 @@ public class PostMapper {
         entity.setContent(domain.getContent());
         entity.setReplyToPostId(domain.getReplyToPostId());
         entity.setCreatedAt(domain.getCreatedAt());
+        entity.setUpdatedAt(domain.getUpdatedAt());
         return entity;
     }
 }
