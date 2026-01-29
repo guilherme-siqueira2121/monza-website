@@ -21,3 +21,5 @@ public interface VoteRepository extends JpaRepository<VoteEntity, Long> {
 
     void deleteByPostIdAndUserId(Long postId, Long userId);
 }
+
+// -

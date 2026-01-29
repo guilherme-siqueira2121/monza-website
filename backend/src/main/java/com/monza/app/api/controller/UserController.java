@@ -9,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-// endpoints REST
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
@@ -19,7 +18,6 @@ public class UserController {
         this.userService = userService;
     }
 
-    // create new user
     @PostMapping
     public ResponseEntity<?> createUser(@RequestBody CreateUserRequest request) {
         try {
@@ -47,7 +45,6 @@ public class UserController {
         }
     }
 
-    // search user by id
     @GetMapping("/{id}")
     public ResponseEntity<?> getUserById(@PathVariable Long id) {
         return userService.findById(id)
@@ -65,7 +62,6 @@ public class UserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // busca por username
     @GetMapping("/username/{username}")
     public ResponseEntity<?> getUserByUsername(@PathVariable String username) {
         return userService.findByUsername(username)
@@ -82,7 +78,6 @@ public class UserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // verifica se username existe
     @GetMapping("/check/{username}")
     public ResponseEntity<Boolean> checkUsername(@PathVariable String username) {
         boolean exists = userService.usernameExists(username);

@@ -42,7 +42,6 @@ public class PostService {
         this.voteRepository = voteRepository;
     }
 
-    // create a new post
     @Transactional
     public Post createPost(Long threadId, Long userId, String content, Long replyToPostId) {
         ForumThreadEntity threadEntity = forumThreadRepository.findById(threadId)
@@ -61,7 +60,6 @@ public class PostService {
         Post post = new Post(threadId, userId, content, replyToPostId);
         post.validate();
 
-        // persiste
         PostEntity entity = postMapper.toEntity(post);
         PostEntity saved = postRepository.save(entity);
 
@@ -70,7 +68,6 @@ public class PostService {
         return postMapper.toDomain(saved);
     }
 
-    // search post by thread
     public List<Post> findPostsByThread(Long threadId) {
         return postRepository.findPostsByThread(threadId)
                 .stream()
@@ -80,23 +77,19 @@ public class PostService {
 
     public long countPostsByThread(Long threadId) {return postRepository.countByThreadId(threadId);}
 
-    // edit post
     @Transactional
     public Post updatePost(Long postId, Long userId, String content, String userRole) {
         PostEntity postEntity = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Post não existe"));
 
-        // verify permission
         if (!canEditPost(postEntity, userId, userRole)) {
             throw new IllegalArgumentException("Sem permissão para editar este post");
         }
 
-        // validate content
         Post post = postMapper.toDomain(postEntity);
         post.setContent(content);
         post.validate();
 
-        // update
         postEntity.setContent(content);
         postEntity.setUpdatedAt(LocalDateTime.now());
         PostEntity saved = postRepository.save(postEntity);
@@ -104,7 +97,6 @@ public class PostService {
         return postMapper.toDomain(saved);
     }
 
-    // delete post
     @Transactional
     public void deletePost(Long postId, Long userId, String userRole) {
         PostEntity postEntity = postRepository.findById(postId)
@@ -118,7 +110,6 @@ public class PostService {
         postRepository.delete(postEntity);
     }
 
-    // vote on a post: value must be 1 or -1. Behavior: if same vote exists -> remove (toggle), if different -> update, if none -> insert.
     @Transactional
     public VoteResponse votePost(Long postId, Long userId, int value) {
         if (value != 1 && value != -1) {
@@ -155,7 +146,6 @@ public class PostService {
         return new VoteResponse(up, down, current);
     }
 
-    // get aggregated score (sum of values)
     public int getPostScore(Long postId) {
         return voteRepository.sumValueByPostId(postId);
     }
@@ -163,7 +153,6 @@ public class PostService {
     public int getUpvotes(Long postId) { return voteRepository.countUpvotesByPostId(postId); }
     public int getDownvotes(Long postId) { return voteRepository.countDownvotesByPostId(postId); }
 
-    // get current user's vote for a post (1, -1 or null)
     public Integer getUserVoteForPost(Long postId, Long userId) {
         return voteRepository.findByPostIdAndUserId(postId, userId)
                 .map(VoteEntity::getValue)
@@ -171,23 +160,17 @@ public class PostService {
                 .orElse(null);
     }
 
-    // verify edit permission
     private boolean canEditPost(PostEntity post, Long userId, String userRole) {
-        // admin can edit any post
         if ("ADMIN".equals(userRole)) {
             return true;
         }
-        // user can only edit own posts
         return post.getUserId().equals(userId);
     }
 
-    // verify delete permission
     private boolean canDeletePost(PostEntity post, Long userId, String userRole) {
-        // admin can delete any post
         if ("ADMIN".equals(userRole)) {
             return true;
         }
-        // user can only delete own posts
         return post.getUserId().equals(userId);
     }
 }

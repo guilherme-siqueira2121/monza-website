@@ -31,7 +31,6 @@ public class PostController {
         this.jwtService = jwtService;
     }
 
-    // create new post
     @PostMapping
     public ResponseEntity<?> createPost(@RequestBody CreatePostRequest request) {
         try {
@@ -51,7 +50,6 @@ public class PostController {
         }
     }
 
-    // list the posts in the thread
     @GetMapping("/thread/{threadId}")
     public ResponseEntity<List<PostResponse>> getPostsByThread(@PathVariable Long threadId,
                                                                @RequestHeader(value = "Authorization", required = false) String authHeader) {
@@ -70,7 +68,6 @@ public class PostController {
         return ResponseEntity.ok(posts);
     }
 
-    // edit post
     @PutMapping("/{id}")
     public ResponseEntity<?> updatePost(@PathVariable Long id, 
                                        @RequestBody UpdatePostRequest request,
@@ -90,7 +87,6 @@ public class PostController {
         }
     }
 
-    // delete post
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deletePost(@PathVariable Long id,
                                        @RequestHeader("Authorization") String authHeader) {
@@ -109,7 +105,6 @@ public class PostController {
         }
     }
 
-    // vote endpoint
     @PostMapping("/{id}/vote")
     public ResponseEntity<?> votePost(@PathVariable("id") Long postId,
                                       @RequestBody VoteRequest request,
@@ -128,7 +123,6 @@ public class PostController {
         }
     }
 
-    // extract token from Authorization header
     private String extractTokenFromHeader(String authHeader) {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             return authHeader.substring(7);
@@ -136,7 +130,6 @@ public class PostController {
         throw new IllegalArgumentException("Token não fornecido");
     }
 
-    // construct a PostResponse with related data
     private PostResponse buildPostResponse(Post post, Long currentUserId) {
         User author = userService.findById(post.getUserId()).orElse(null);
 

@@ -28,7 +28,6 @@ public class UserEntity {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    // constructor
     public UserEntity() {}
 
     public UserEntity(String username, String userCode, String password,
@@ -41,7 +40,6 @@ public class UserEntity {
         this.createdAt = createdAt;
     }
 
-    // getters and setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

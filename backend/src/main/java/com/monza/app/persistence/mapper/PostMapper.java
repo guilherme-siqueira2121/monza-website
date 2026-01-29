@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class PostMapper {
 
-    // converts entity to domain
     public Post toDomain(PostEntity entity) {
         if (entity == null) return null;
         return new Post(
@@ -21,7 +20,6 @@ public class PostMapper {
         );
     }
 
-    // converts domain to entity
     public PostEntity toEntity(Post domain) {
         if (domain == null) return null;
         PostEntity entity = new PostEntity();

@@ -27,7 +27,6 @@ public class ThreadResponse {
         this.updatedAt = updatedAt;
     }
 
-    // getters
     public Long getId() {return id;}
     public String getTitle() {return title;}
     public String getContent() {return content;}

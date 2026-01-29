@@ -19,7 +19,6 @@ public class BoardController {
         this.forumThreadRepository = forumThreadRepository;
     }
 
-    // list all boards
     @GetMapping
     public ResponseEntity<List<BoardResponse>> getAllBoards() {
         List<BoardResponse> boards = boardService.findAllBoards()
@@ -36,7 +35,6 @@ public class BoardController {
         return ResponseEntity.ok(boards);
     }
 
-    // find board for id
     @GetMapping("/{id}")
     public ResponseEntity<?> getBoardById(@PathVariable Long id) {
         return boardService.findById(id)

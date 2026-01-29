@@ -30,7 +30,6 @@ public class ForumThreadController {
         this.postService = postService;
     }
 
-    // create new thread
     @PostMapping
     public ResponseEntity<?> createThread(@RequestBody CreateThreadRequest request) {
         try {
@@ -50,7 +49,6 @@ public class ForumThreadController {
         }
     }
 
-    // list of threads on a board
     @GetMapping("/board/{boardId}")
     public ResponseEntity<List<ThreadResponse>> getThreadsByBoard(@PathVariable Long boardId) {
         List<ThreadResponse> threads = forumThreadService.findThreadsByBoard(boardId)
@@ -61,7 +59,6 @@ public class ForumThreadController {
         return ResponseEntity.ok(threads);
     }
 
-    // looking for thread by id
     @GetMapping("/{id}")
     public ResponseEntity<?> getThreadById(@PathVariable Long id) {
         return forumThreadService.findById(id)

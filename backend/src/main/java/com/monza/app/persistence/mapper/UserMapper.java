@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class UserMapper {
 
-    // converts entity to domain
     public User toDomain(UserEntity entity) {
         if (entity == null) return null;
 
@@ -22,7 +21,6 @@ public class UserMapper {
         );
     }
 
-    // converts domain to entity
     public UserEntity toEntity(User domain) {
         if (domain == null) return null;
 

@@ -11,9 +11,8 @@ public class PostResponse {
     private LocalDateTime updatedAt;
     private int upvoteCount;
     private int downvoteCount;
-    private Integer currentUserVote; // 1, -1 or null
+    private Integer currentUserVote;
 
-    // constructor
     public PostResponse(Long id, String content, UserResponse author, Long replyToPostId, LocalDateTime createdAt, LocalDateTime updatedAt, int upvoteCount, int downvoteCount, Integer currentUserVote) {
         this.id = id;
         this.content = content;
@@ -26,7 +25,6 @@ public class PostResponse {
         this.currentUserVote = currentUserVote;
     }
 
-    // getters
     public Long getId() {return id;}
     public String getContent() {return content;}
     public UserResponse getAuthor() {return author;}

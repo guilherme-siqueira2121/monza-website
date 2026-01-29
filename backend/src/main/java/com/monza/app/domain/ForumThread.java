@@ -13,7 +13,6 @@ public class ForumThread {
     private LocalDateTime createdAt;
     private LocalDateTime updateAt;
 
-    // constructor
     public ForumThread(Long id, Long boardId, Long userId, String title, String content,
                        boolean isPinned, boolean isLocked, LocalDateTime createdAt, LocalDateTime updateAt) {
         this.id = id;
@@ -27,7 +26,6 @@ public class ForumThread {
         this.updateAt = updateAt;
     }
 
-    // constructor2
     public ForumThread(Long boardId, Long userId, String title, String content) {
         this.boardId = boardId;
         this.userId = userId;
@@ -39,7 +37,6 @@ public class ForumThread {
         this.updateAt = LocalDateTime.now();
     }
 
-    // domain validation
     public void validate() {
         if (title == null || title.trim().isEmpty()) {
             throw new IllegalArgumentException("Título não pode ser vazio");
@@ -52,9 +49,9 @@ public class ForumThread {
         }
     }
 
-    // getters and setter
     public Long getId() {return id;}
     public void setId(Long id) {this.id = id;}
+
     public Long getBoardId() {return boardId;}
     public Long getUserId() {return userId;}
     public String getTitle() {return title;}

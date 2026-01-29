@@ -11,7 +11,6 @@ public class User {
     private boolean enabled;
     private LocalDateTime createdAt;
 
-    // constructor
     public User(Long id, String username, String userCode, String password,
                 String role, boolean enabled, LocalDateTime createdAt) {
         this.id = id;
@@ -23,7 +22,6 @@ public class User {
         this.createdAt = createdAt;
     }
 
-    // constructor2
     public User(String username, String userCode, String password) {
         this.username = username;
         this.userCode = userCode;
@@ -33,7 +31,6 @@ public class User {
         this.createdAt = LocalDateTime.now();
     }
 
-    // validation
     public void validate() {
         if (username == null || username.trim().isEmpty()) {
             throw new IllegalArgumentException("Username não pode ser vazio");
@@ -46,7 +43,6 @@ public class User {
         }
     }
 
-    // getters and setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getUsername() { return username; }

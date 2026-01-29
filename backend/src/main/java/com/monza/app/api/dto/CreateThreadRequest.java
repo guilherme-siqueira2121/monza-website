@@ -6,10 +6,8 @@ public class CreateThreadRequest {
     private String title;
     private String content;
 
-    // constructor
     public CreateThreadRequest() {}
 
-    // getters and setters
     public Long getBoardId() {return boardId;}
     public void setBoardId(Long boardId) {this.boardId = boardId;}
     public Long getUserId() {return userId;}

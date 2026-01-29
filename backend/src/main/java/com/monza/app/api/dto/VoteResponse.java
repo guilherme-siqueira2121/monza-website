@@ -3,7 +3,7 @@ package com.monza.app.api.dto;
 public class VoteResponse {
     private int upvoteCount;
     private int downvoteCount;
-    private Integer currentUserVote; // 1, -1 or null
+    private Integer currentUserVote;
 
     public VoteResponse() {}
 
@@ -21,3 +21,5 @@ public class VoteResponse {
     public void setDownvoteCount(int downvoteCount) { this.downvoteCount = downvoteCount; }
     public void setCurrentUserVote(Integer currentUserVote) { this.currentUserVote = currentUserVote; }
 }
+
+// -

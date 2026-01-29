@@ -9,7 +9,6 @@ public class UserResponse {
     private String role;
     private LocalDateTime createdAt;
 
-    // constructor
     public UserResponse(Long id, String username, String userCode,
                         String role, LocalDateTime createdAt) {
         this.id = id;
@@ -19,7 +18,6 @@ public class UserResponse {
         this.createdAt = createdAt;
     }
 
-    // getters
     public Long getId() {return id;}
     public String getUsername() {return username;}
     public String getUserCode() {return userCode;}

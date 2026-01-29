@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class BoardMapper {
 
-    // converts entity to domain
     public Board toDomain(BoardEntity entity) {
         if (entity == null) return null;
         return new Board(

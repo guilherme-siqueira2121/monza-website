@@ -8,7 +8,6 @@ public class CreatePostRequest {
 
     public CreatePostRequest() {}
 
-    // getters and setters
     public Long getThreadId() {return threadId;}
     public void setThreadId(Long threadId) {this.threadId = threadId;}
     public Long getUserId() {return userId;}

@@ -30,7 +30,6 @@ public class ForumThreadService {
         this.forumThreadMapper = forumThreadMapper;
     }
 
-    // create a new thread
     @Transactional
     public ForumThread createThread(Long boardId, Long userId, String title, String content) {
         if (!boardRepository.existsById(boardId)) {
@@ -49,7 +48,6 @@ public class ForumThreadService {
         return forumThreadMapper.toDomain(saved);
     }
 
-    // search threads on a board
     public List<ForumThread> findThreadsByBoard(Long boardId) {
         return forumThreadRepository.findThreadsByBoardId(boardId)
                 .stream()
@@ -57,7 +55,6 @@ public class ForumThreadService {
                 .collect(Collectors.toList());
     }
 
-    // search thread by id
     public Optional<ForumThread> findById(Long id) {
         return forumThreadRepository.findById(id)
                 .map(forumThreadMapper::toDomain);

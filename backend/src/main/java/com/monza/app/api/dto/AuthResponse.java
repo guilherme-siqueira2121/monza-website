@@ -18,7 +18,6 @@ public class AuthResponse {
         this.role = role;
     }
 
-    // getters
     public String getAccessToken() { return accessToken; }
     public String getRefreshToken() { return refreshToken; }
     public Long getUserId() { return userId; }

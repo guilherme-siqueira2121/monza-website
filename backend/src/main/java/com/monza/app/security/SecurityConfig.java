@@ -43,21 +43,17 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
                 .authorizeHttpRequests(auth -> auth
-                        // Endpoints públicos
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/boards/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/threads/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/posts/**").permitAll()
 
-                        // Criar thread/post precisa estar autenticado
                         .requestMatchers(HttpMethod.POST, "/api/threads").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/posts").authenticated()
 
-                        // Editar e deletar posts precisa estar autenticado
                         .requestMatchers(HttpMethod.PUT, "/api/posts/*").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/posts/*").authenticated()
 
-                        // Pin/Lock só para ADMIN ou MODERATOR
                         .requestMatchers("/api/threads/*/pin").hasAnyRole("ADMIN", "MODERATOR")
                         .requestMatchers("/api/threads/*/unpin").hasAnyRole("ADMIN", "MODERATOR")
                         .requestMatchers("/api/threads/*/lock").hasAnyRole("ADMIN", "MODERATOR")

@@ -18,7 +18,6 @@ public class BoardService {
          this.boardMapper = boardMapper;
      }
 
-     // list all available license plates
      public List<Board> findAllBoards() {
          return boardRepository.findAllByOrderByCreatedAtDesc()
                  .stream()
@@ -26,7 +25,6 @@ public class BoardService {
                  .collect(Collectors.toList());
      }
 
-     // search board by id
     public Optional<Board> findById(Long id) {
          return boardRepository.findById(id)
                  .map(boardMapper::toDomain);

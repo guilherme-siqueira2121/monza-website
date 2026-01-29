@@ -6,8 +6,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ForumThreadMapper {
-
-    // converts entity to domain
     public ForumThread toDomain(ForumThreadEntity entity) {
         if (entity == null) return null;
         return new ForumThread(
@@ -23,7 +21,6 @@ public class ForumThreadMapper {
         );
     }
 
-    // converts domain to entity
     public ForumThreadEntity toEntity(ForumThread domain) {
         if (domain == null) return null;
         ForumThreadEntity entity = new ForumThreadEntity();

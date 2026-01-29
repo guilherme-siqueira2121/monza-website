@@ -15,7 +15,6 @@ public class BoardResponse {
         this.threadCount = threadCount;
     }
 
-    // getters
     public Long getId() {return id;}
     public String getName() {return name;}
     public String getTitle() {return title;}
