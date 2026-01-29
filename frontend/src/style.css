@@ -165,13 +165,13 @@ main {
 }
 
 .thread-item.pinned {
-    border-left: 4px solid #f39c12;
-    background: #fffbf0;
+    border-left: 4px solid #95a5a6;
+    background: #f8f9fa;
 }
 
 .thread-item.locked {
-    border-left: 4px solid #e74c3c;
-    background: #fff5f5;
+    border-left: 4px solid #95a5a6;
+    background: #f8f9fa;
 }
 
 .thread-item h3 {
@@ -193,12 +193,12 @@ main {
 }
 
 .badge.pinned {
-    background: #f39c12;
+    background: #95a5a6;
     color: white;
 }
 
 .badge.locked {
-    background: #e74c3c;
+    background: #95a5a6;
     color: white;
 }
 
@@ -372,21 +372,25 @@ button {
 }
 
 .btn-danger {
-    background: #e74c3c;
-    color: white;
+    background: transparent;
+    border: 1px solid #e0e0e0;
+    color: #333;
 }
 
 .btn-danger:hover {
-    background: #c0392b;
+    background: #f8f8f8;
+    border-color: #d0d0d0;
 }
 
 .btn-warning {
-    background: #f39c12;
-    color: white;
+    background: transparent;
+    border: 1px solid #e0e0e0;
+    color: #333;
 }
 
 .btn-warning:hover {
-    background: #e67e22;
+    background: #f8f8f8;
+    border-color: #d0d0d0;
 }
 
 .btn-small {
