@@ -7,6 +7,7 @@ import com.monza.app.api.dto.UpdatePostRequest;
 import com.monza.app.api.dto.UserResponse;
 import com.monza.app.api.dto.VoteRequest;
 import com.monza.app.api.dto.VoteResponse;
+import com.monza.app.api.dto.NestedPostResponse;
 import com.monza.app.domain.Post;
 import com.monza.app.domain.User;
 import com.monza.app.service.PostService;
@@ -50,9 +51,9 @@ public class PostController {
         }
     }
 
-    @GetMapping("/thread/{threadId}")
-    public ResponseEntity<List<PostResponse>> getPostsByThread(@PathVariable Long threadId,
-                                                               @RequestHeader(value = "Authorization", required = false) String authHeader) {
+    @GetMapping("/thread/{threadId}/nested")
+    public ResponseEntity<List<NestedPostResponse>> getNestedPostsByThread(@PathVariable Long threadId,
+                                                                           @RequestHeader(value = "Authorization", required = false) String authHeader) {
         Long uid = null;
         if (authHeader != null) {
             String token = extractTokenFromHeader(authHeader);
@@ -60,10 +61,7 @@ public class PostController {
         }
         final Long currentUserId = uid;
 
-        List<PostResponse> posts = postService.findPostsByThread(threadId)
-                .stream()
-                .map(p -> buildPostResponse(p, currentUserId))
-                .collect(Collectors.toList());
+        List<NestedPostResponse> posts = postService.buildNestedPostResponses(threadId, currentUserId);
 
         return ResponseEntity.ok(posts);
     }

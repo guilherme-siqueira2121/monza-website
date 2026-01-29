@@ -46,6 +46,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/boards/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/threads/**").permitAll()
+                        .requestMatchers("/api/posts/thread/*/nested").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/posts/**").permitAll()
 
                         .requestMatchers(HttpMethod.POST, "/api/threads").authenticated()

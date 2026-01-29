@@ -215,11 +215,16 @@ class API {
         return response.json();
     }
 
-    static async createPost(threadId, content) {
+    static async getNestedPosts(threadId) {
+        const response = await this.request(`/posts/thread/${threadId}/nested`);
+        return response.json();
+    }
+
+    static async createPost(threadId, content, replyToPostId = null) {
         const user = Auth.getUser();
         const response = await this.request('/posts', {
             method: 'POST',
-            body: JSON.stringify({ threadId, userId: user.userId, content, replyToPostId: null })
+            body: JSON.stringify({ threadId, userId: user.userId, content, replyToPostId })
         });
         return response.json();
     }
@@ -553,6 +558,86 @@ async function handleCreateThread(event, boardId) {
 }
 
 // ============================================
+// NESTED POST RENDERING
+// ============================================
+function renderNestedPost(post, depth) {
+    const user = Auth.getUser();
+    const canEdit = user && (user.role === 'ADMIN' || post.author?.id === user.userId);
+    const canDelete = user && (user.role === 'ADMIN' || post.author?.id === user.userId);
+    const indentClass = depth > 0 ? `post-nested depth-${Math.min(depth, 5)}` : '';
+    
+    return `
+        <div class="post-item ${indentClass}" data-post-id="${post.id}">
+            <div class="post-header">
+                <div class="post-header-left">
+                    <span class="post-author">${escapeHtml(post.author?.username || 'Anônimo')}</span>
+                    <span class="post-date">${formatDateTime(post.createdAt)}</span>
+                    ${post.updatedAt ? `<span class="post-edited">(editado)</span>` : ''}
+                </div>
+                <div class="post-actions">
+                    ${canEdit ? `<button class="btn-warning btn-small" onclick="showEditPostForm(${post.id}, '${escapeHtml(post.content)}')">✏️</button>` : ''}
+                    ${canDelete ? `<button class="btn-danger btn-small" onclick="handleDeletePost(${post.id})">🗑️</button>` : ''}
+                    <button class="btn-warning btn-small" onclick="showReplyForm(${post.id})">↩️</button>
+                </div>
+            </div>
+            <div class="post-content" id="post-content-${post.id}">${escapeHtml(post.content)}</div>
+            <div class="post-votes">
+                <button class="btn-vote btn-up ${post.currentUserVote === 1 ? 'voted' : ''}" onclick="handleVote(${post.id}, 1)">▲</button>
+                <span class="vote-score up">${post.upvoteCount || 0}</span>
+                <button class="btn-vote btn-down ${post.currentUserVote === -1 ? 'voted' : ''}" onclick="handleVote(${post.id}, -1)">▼</button>
+                <span class="vote-score down">${post.downvoteCount || 0}</span>
+            </div>
+            ${post.replies && post.replies.length > 0 ? `
+                <div class="post-replies">
+                    ${post.replies.map(reply => renderNestedPost(reply, depth + 1)).join('')}
+                </div>
+            ` : ''}
+        </div>
+    `;
+}
+
+function showReplyForm(parentPostId) {
+    const existingForm = document.getElementById(`reply-form-${parentPostId}`);
+    if (existingForm) {
+        existingForm.remove();
+        return;
+    }
+    
+    const postElement = document.querySelector(`[data-post-id="${parentPostId}"]`);
+    const replyForm = document.createElement('div');
+    replyForm.id = `reply-form-${parentPostId}`;
+    replyForm.className = 'reply-form-inline';
+    replyForm.innerHTML = `
+        <form onsubmit="handleReplyPost(event, ${parentPostId})">
+            <div class="form-group">
+                <textarea rows="3" placeholder="Digite sua resposta..." required></textarea>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn-primary btn-small">Responder</button>
+                <button type="button" class="btn-secondary btn-small" onclick="this.closest('.reply-form-inline').remove()">Cancelar</button>
+            </div>
+        </form>
+    `;
+    
+    postElement.appendChild(replyForm);
+    replyForm.querySelector('textarea').focus();
+}
+
+async function handleReplyPost(event, parentPostId) {
+    event.preventDefault();
+    const content = event.target.querySelector('textarea').value;
+    const threadId = currentView.data.threadId;
+    
+    try {
+        await API.createPost(threadId, content, parentPostId);
+        showNotification('Resposta postada com sucesso!', 'success');
+        navigate('posts', { threadId });
+    } catch (error) {
+        showNotification('Erro ao postar resposta', 'error');
+    }
+}
+
+// ============================================
 // VIEW - POSTS
 // ============================================
 async function showPosts(threadId) {
@@ -561,7 +646,7 @@ async function showPosts(threadId) {
     try {
         const [thread, posts] = await Promise.all([
             API.getThread(threadId),
-            API.getPosts(threadId)
+            API.getNestedPosts(threadId)
         ]);
 
         setBreadcrumb([
@@ -600,46 +685,7 @@ async function showPosts(threadId) {
             </div>
 
             <div class="post-list">
-                <div class="post-item op">
-                    <div class="post-header">
-                        <span class="post-author">${escapeHtml(thread.author?.username || 'Anônimo')}</span>
-                        <span class="post-date">${formatDateTime(thread.createdAt)}</span>
-                    </div>
-                    <div class="post-content">${escapeHtml(thread.content)}</div>
-                </div>
-
-                ${posts.map(post => {
-                    const canEdit = user && (user.role === 'ADMIN' || post.author?.id === user.userId);
-                    const canDelete = user && (user.role === 'ADMIN' || post.author?.id === user.userId);
-                    
-                    // Debug - remover depois
-                    console.log('Post:', post);
-                    console.log('User:', user);
-                    console.log('Can Edit:', canEdit, 'Post Author ID:', post.author?.id, 'User ID:', user?.userId);
-                    
-                    return `
-                        <div class="post-item" data-post-id="${post.id}">
-                            <div class="post-header">
-                                <div class="post-header-left">
-                                    <span class="post-author">${escapeHtml(post.author?.username || 'Anônimo')}</span>
-                                    <span class="post-date">${formatDateTime(post.createdAt || post.createAt)}</span>
-                                    ${post.updatedAt ? `<span class="post-edited">(editado)</span>` : ''}
-                                </div>
-                                <div class="post-actions">
-                                    ${canEdit ? `<button class="btn-warning btn-small" onclick="showEditPostForm(${post.id}, '${escapeHtml(post.content)}')">✏️</button>` : ''}
-                                    ${canDelete ? `<button class="btn-danger btn-small" onclick="handleDeletePost(${post.id})">🗑️</button>` : ''}
-                                </div>
-                            </div>
-                            <div class="post-content" id="post-content-${post.id}">${escapeHtml(post.content)}</div>
-                            <div class="post-votes">
-                                <button class="btn-vote btn-up ${post.currentUserVote === 1 ? 'voted' : ''}" onclick="handleVote(${post.id}, 1)">▲</button>
-                                <span class="vote-score up">${post.upvoteCount || 0}</span>
-                                <button class="btn-vote btn-down ${post.currentUserVote === -1 ? 'voted' : ''}" onclick="handleVote(${post.id}, -1)">▼</button>
-                                <span class="vote-score down">${post.downvoteCount || 0}</span>
-                            </div>
-                        </div>
-                    `;
-                }).join('')}
+                ${posts.map(post => renderNestedPost(post, 0)).join('')}
             </div>
 
             ${!thread.locked ? `

@@ -299,6 +299,48 @@ main {
 .vote-score.up { color: #27ae60; }
 .vote-score.down { color: #e74c3c; }
 
+/* Nested post indentation */
+.post-nested {
+    margin-left: 2rem;
+    border-left: 2px solid #e9ecef;
+    padding-left: 1rem;
+    margin-top: 0.5rem;
+}
+
+.post-nested.depth-1 { margin-left: 1rem; }
+.post-nested.depth-2 { margin-left: 2rem; }
+.post-nested.depth-3 { margin-left: 3rem; }
+.post-nested.depth-4 { margin-left: 4rem; }
+.post-nested.depth-5 { margin-left: 5rem; }
+
+.post-replies {
+    margin-top: 0.5rem;
+}
+
+.reply-form-inline {
+    margin-top: 0.5rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 4px;
+    border: 1px solid #e9ecef;
+}
+
+.reply-form-inline textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    resize: vertical;
+}
+
+.reply-form-inline .form-group {
+    margin-bottom: 0.5rem;
+}
+
+.reply-form-inline .form-group:last-child {
+    margin-bottom: 0;
+}
+
 /* Forms */
 .form-container {
     background: white;

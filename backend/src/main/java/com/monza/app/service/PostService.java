@@ -1,8 +1,11 @@
 package com.monza.app.service;
 
 import com.monza.app.api.dto.VoteResponse;
+import com.monza.app.api.dto.NestedPostResponse;
+import com.monza.app.api.dto.UserResponse;
 import com.monza.app.domain.Post;
 import com.monza.app.domain.ForumThread;
+import com.monza.app.domain.User;
 import com.monza.app.persistence.entity.ForumThreadEntity;
 import com.monza.app.persistence.entity.PostEntity;
 import com.monza.app.persistence.entity.VoteEntity;
@@ -15,8 +18,12 @@ import com.monza.app.service.PermissionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Comparator;
 import java.util.stream.Collectors;
 
 
@@ -28,19 +35,22 @@ public class PostService {
     private final ForumThreadService forumThreadService;
     private final PostMapper postMapper;
     private final VoteRepository voteRepository;
+    private final UserService userService;
 
     public PostService(PostRepository postRepository,
                        ForumThreadRepository forumThreadRepository,
                        UserRepository userRepository,
                        ForumThreadService forumThreadService,
                        PostMapper postMapper,
-                       VoteRepository voteRepository) {
+                       VoteRepository voteRepository,
+                       UserService userService) {
         this.postRepository = postRepository;
         this.forumThreadRepository = forumThreadRepository;
         this.userRepository = userRepository;
         this.forumThreadService = forumThreadService;
         this.postMapper = postMapper;
         this.voteRepository = voteRepository;
+        this.userService = userService;
     }
 
     @Transactional
@@ -74,6 +84,115 @@ public class PostService {
                 .stream()
                 .map(postMapper::toDomain)
                 .collect(Collectors.toList());
+    }
+
+    public List<Post> findNestedPostsByThread(Long threadId) {
+        List<Post> allPosts = findPostsByThread(threadId);
+        return buildNestedPostStructure(allPosts);
+    }
+
+    private List<Post> buildNestedPostStructure(List<Post> allPosts) {
+        List<Post> rootPosts = new ArrayList<>();
+        Map<Long, List<Post>> replyMap = new HashMap<>();
+        
+        // Group posts by replyToPostId
+        for (Post post : allPosts) {
+            if (post.getReplyToPostId() == null) {
+                rootPosts.add(post);
+            } else {
+                replyMap.computeIfAbsent(post.getReplyToPostId(), k -> new ArrayList<>()).add(post);
+            }
+        }
+        
+        // Sort replies by creation date
+        replyMap.values().forEach(replies -> 
+            replies.sort(Comparator.comparing(Post::getCreatedAt)));
+        
+        // Sort root posts by creation date
+        rootPosts.sort(Comparator.comparing(Post::getCreatedAt));
+        
+        return rootPosts;
+    }
+
+    public List<Post> getRepliesForPost(Long postId, List<Post> allPosts) {
+        return allPosts.stream()
+                .filter(post -> postId.equals(post.getReplyToPostId()))
+                .sorted(Comparator.comparing(Post::getCreatedAt))
+                .collect(Collectors.toList());
+    }
+
+    public List<NestedPostResponse> buildNestedPostResponses(Long threadId, Long currentUserId) {
+        List<Post> allPosts = findPostsByThread(threadId);
+        Map<Long, List<Post>> replyMap = new HashMap<>();
+        
+        // Group posts by replyToPostId
+        for (Post post : allPosts) {
+            if (post.getReplyToPostId() != null) {
+                replyMap.computeIfAbsent(post.getReplyToPostId(), k -> new ArrayList<>()).add(post);
+            }
+        }
+        
+        // Sort replies by creation date
+        replyMap.values().forEach(replies -> 
+            replies.sort(Comparator.comparing(Post::getCreatedAt)));
+        
+        // Build nested structure
+        List<NestedPostResponse> nestedResponses = new ArrayList<>();
+        
+        // Get root posts (posts without replyToPostId)
+        List<Post> rootPosts = allPosts.stream()
+                .filter(post -> post.getReplyToPostId() == null)
+                .sorted(Comparator.comparing(Post::getCreatedAt))
+                .collect(Collectors.toList());
+        
+        for (Post rootPost : rootPosts) {
+            NestedPostResponse nestedResponse = buildNestedPostResponse(rootPost, replyMap, currentUserId, 0);
+            nestedResponses.add(nestedResponse);
+        }
+        
+        return nestedResponses;
+    }
+
+    private NestedPostResponse buildNestedPostResponse(Post post, Map<Long, List<Post>> replyMap, Long currentUserId, int depth) {
+        // Get replies for this post
+        List<Post> replies = replyMap.getOrDefault(post.getId(), new ArrayList<>());
+        List<NestedPostResponse> nestedReplies = new ArrayList<>();
+        
+        // Recursively build nested responses
+        for (Post reply : replies) {
+            NestedPostResponse nestedReply = buildNestedPostResponse(reply, replyMap, currentUserId, depth + 1);
+            nestedReplies.add(nestedReply);
+        }
+        
+        // Get vote data
+        int up = getUpvotes(post.getId());
+        int down = getDownvotes(post.getId());
+        Integer currentVote = null;
+        if (currentUserId != null) {
+            currentVote = getUserVoteForPost(post.getId(), currentUserId);
+        }
+        
+        // Get author information
+        UserResponse author = null;
+        User user = userService.findById(post.getUserId()).orElse(null);
+        if (user != null) {
+            author = new UserResponse(user.getId(), user.getUsername(),
+                    user.getUserCode(), user.getRole(), user.getCreatedAt());
+        }
+        
+        return new NestedPostResponse(
+            post.getId(),
+            post.getContent(),
+            author,
+            post.getReplyToPostId(),
+            post.getCreatedAt(),
+            post.getUpdatedAt(),
+            up,
+            down,
+            currentVote,
+            nestedReplies,
+            depth
+        );
     }
 
     public long countPostsByThread(Long threadId) {return postRepository.countByThreadId(threadId);}
