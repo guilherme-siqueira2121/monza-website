@@ -186,6 +186,19 @@ class API {
         return response.json();
     }
 
+    static async updateThread(threadId, title, content) {
+        const response = await this.request(`/threads/${threadId}`, {
+            method: 'PUT',
+            body: JSON.stringify({ title, content })
+        });
+        return response.json();
+    }
+
+    static async deleteThread(threadId) {
+        const response = await this.request(`/threads/${threadId}`, { method: 'DELETE' });
+        return response;
+    }
+
     static async lockThread(threadId) {
         const response = await this.request(`/threads/${threadId}/lock`, { method: 'PATCH' });
         return response.json();
@@ -559,6 +572,9 @@ async function showPosts(threadId) {
 
         const user = Auth.getUser();
         const isAdmin = user && user.role === 'ADMIN';
+        const isAuthor = user && thread.author?.id === user.userId;
+        const canEditThread = isAdmin || isAuthor;
+        const canDeleteThread = isAdmin || isAuthor;
 
         app.innerHTML = `
             <div class="thread-header">
@@ -569,16 +585,18 @@ async function showPosts(threadId) {
                         ${formatDate(thread.createdAt)}
                     </div>
                 </div>
-                ${isAdmin ? `
-                    <div class="btn-group">
+                <div class="btn-group">
+                    ${canEditThread ? `<button class="btn-warning btn-small" onclick="showEditThreadForm(${thread.id}, '${escapeHtml(thread.title)}', '${escapeHtml(thread.content)}')">✏️</button>` : ''}
+                    ${canDeleteThread ? `<button class="btn-danger btn-small" onclick="handleDeleteThread(${thread.id})">🗑️</button>` : ''}
+                    ${isAdmin ? `
                         <button class="btn-warning btn-small" onclick="togglePin(${thread.id}, ${thread.pinned})">
                             ${thread.pinned ? '📌 Desfixar' : '📍 Fixar'}
                         </button>
                         <button class="btn-danger btn-small" onclick="toggleLock(${thread.id}, ${thread.locked})">
                             ${thread.locked ? '🔓 Destravar' : '🔒 Travar'}
                         </button>
-                    </div>
-                ` : ''}
+                    ` : ''}
+                </div>
             </div>
 
             <div class="post-list">
@@ -810,6 +828,77 @@ async function toggleLock(threadId, isLocked) {
         navigate('posts', { threadId });
     } catch (error) {
         showNotification('Erro ao alterar lock', 'error');
+    }
+}
+
+// ============================================
+// THREAD ACTIONS
+// ============================================
+function showEditThreadForm(threadId, currentTitle, currentContent) {
+    const editThreadContent = document.getElementById('editThreadContent');
+    if (!editThreadContent) {
+        const modal = document.createElement('div');
+        modal.id = 'editThreadModal';
+        modal.className = 'modal hidden';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div id="editThreadContent"></div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    
+    editThreadContent.innerHTML = `
+        <h3>Editar Thread</h3>
+        <form onsubmit="handleEditThread(event, ${threadId})">
+            <div class="form-group">
+                <label for="editThreadTitle">Título:</label>
+                <input type="text" id="editThreadTitle" value="${escapeHtml(currentTitle)}" required>
+            </div>
+            <div class="form-group">
+                <label for="editThreadContent">Conteúdo:</label>
+                <textarea id="editThreadContentTextarea" rows="6" required>${escapeHtml(currentContent)}</textarea>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn-primary">Salvar</button>
+                <button type="button" class="btn-secondary" onclick="closeEditThreadModal()">Cancelar</button>
+            </div>
+        </form>
+    `;
+    
+    document.getElementById('editThreadModal').classList.remove('hidden');
+}
+
+function closeEditThreadModal() {
+    document.getElementById('editThreadModal').classList.add('hidden');
+}
+
+async function handleEditThread(event, threadId) {
+    event.preventDefault();
+    const title = document.getElementById('editThreadTitle').value;
+    const content = document.getElementById('editThreadContentTextarea').value;
+    
+    try {
+        await API.updateThread(threadId, title, content);
+        showNotification('Thread editada com sucesso!', 'success');
+        closeEditThreadModal();
+        navigate('posts', { threadId });
+    } catch (error) {
+        showNotification(error.message || 'Erro ao editar thread', 'error');
+    }
+}
+
+async function handleDeleteThread(threadId) {
+    if (!confirm('Tem certeza que deseja deletar esta thread e todos os seus posts?')) {
+        return;
+    }
+    
+    try {
+        await API.deleteThread(threadId);
+        showNotification('Thread deletada com sucesso!', 'success');
+        navigate('threads', currentView.data);
+    } catch (error) {
+        showNotification(error.message || 'Erro ao deletar thread', 'error');
     }
 }
 

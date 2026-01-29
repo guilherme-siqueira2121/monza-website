@@ -11,6 +11,7 @@ import com.monza.app.persistence.repository.PostRepository;
 import com.monza.app.persistence.repository.ForumThreadRepository;
 import com.monza.app.persistence.repository.UserRepository;
 import com.monza.app.persistence.repository.VoteRepository;
+import com.monza.app.service.PermissionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
@@ -82,7 +83,7 @@ public class PostService {
         PostEntity postEntity = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Post não existe"));
 
-        if (!canEditPost(postEntity, userId, userRole)) {
+        if (!PermissionService.canEditPost(postEntity.getUserId(), userId, userRole)) {
             throw new IllegalArgumentException("Sem permissão para editar este post");
         }
 
@@ -103,7 +104,7 @@ public class PostService {
                 .orElseThrow(() -> new IllegalArgumentException("Post não existe"));
 
         // verify permission
-        if (!canDeletePost(postEntity, userId, userRole)) {
+        if (!PermissionService.canDeletePost(postEntity.getUserId(), userId, userRole)) {
             throw new IllegalArgumentException("Sem permissão para deletar este post");
         }
 
@@ -160,19 +161,6 @@ public class PostService {
                 .orElse(null);
     }
 
-    private boolean canEditPost(PostEntity post, Long userId, String userRole) {
-        if ("ADMIN".equals(userRole)) {
-            return true;
-        }
-        return post.getUserId().equals(userId);
-    }
-
-    private boolean canDeletePost(PostEntity post, Long userId, String userRole) {
-        if ("ADMIN".equals(userRole)) {
-            return true;
-        }
-        return post.getUserId().equals(userId);
-    }
 }
 
 // -

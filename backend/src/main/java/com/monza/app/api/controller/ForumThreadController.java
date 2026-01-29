@@ -3,12 +3,14 @@ package com.monza.app.api.controller;
 import com.monza.app.api.dto.CreateThreadRequest;
 import com.monza.app.api.dto.ErrorResponse;
 import com.monza.app.api.dto.ThreadResponse;
+import com.monza.app.api.dto.UpdateThreadRequest;
 import com.monza.app.api.dto.UserResponse;
 import com.monza.app.domain.ForumThread;
 import com.monza.app.domain.User;
 import com.monza.app.service.PostService;
 import com.monza.app.service.ForumThreadService;
 import com.monza.app.service.UserService;
+import com.monza.app.security.JwtService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,12 +24,14 @@ public class ForumThreadController {
     private final ForumThreadService forumThreadService;
     private final UserService userService;
     private final PostService postService;
+    private final JwtService jwtService;
 
     public ForumThreadController(ForumThreadService forumThreadService, UserService userService,
-                                 PostService postService) {
+                                 PostService postService, JwtService jwtService) {
         this.forumThreadService = forumThreadService;
         this.userService = userService;
         this.postService = postService;
+        this.jwtService = jwtService;
     }
 
     @PostMapping
@@ -67,46 +71,105 @@ public class ForumThreadController {
     }
 
     @PatchMapping("/{id}/pin")
-    public ResponseEntity<?> pinThread(@PathVariable Long id) {
+    public ResponseEntity<?> pinThread(@PathVariable Long id,
+                                       @RequestHeader("Authorization") String authHeader) {
         try {
-            ForumThread thread = forumThreadService.togglePinThread(id, true);
+            String token = extractTokenFromHeader(authHeader);
+            Long userId = jwtService.extractUserId(token);
+            String userRole = jwtService.extractRole(token);
+
+            ForumThread thread = forumThreadService.togglePinThread(id, userId, userRole, true);
             return ResponseEntity.ok(buildThreadResponse(thread));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ErrorResponse("Thread não encontrada"));
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse("Não autorizado"));
         }
     }
 
     @PatchMapping("/{id}/unpin")
-    public ResponseEntity<?> unpinThread(@PathVariable Long id) {
+    public ResponseEntity<?> unpinThread(@PathVariable Long id,
+                                         @RequestHeader("Authorization") String authHeader) {
         try {
-            ForumThread thread = forumThreadService.togglePinThread(id, false);
+            String token = extractTokenFromHeader(authHeader);
+            Long userId = jwtService.extractUserId(token);
+            String userRole = jwtService.extractRole(token);
+
+            ForumThread thread = forumThreadService.togglePinThread(id, userId, userRole, false);
             return ResponseEntity.ok(buildThreadResponse(thread));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ErrorResponse("Thread não encontrada"));
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse("Não autorizado"));
         }
     }
 
     @PatchMapping("/{id}/lock")
-    public ResponseEntity<?> lockThread(@PathVariable Long id) {
+    public ResponseEntity<?> lockThread(@PathVariable Long id,
+                                        @RequestHeader("Authorization") String authHeader) {
         try {
-            ForumThread thread = forumThreadService.toggleLockThread(id, true);
+            String token = extractTokenFromHeader(authHeader);
+            Long userId = jwtService.extractUserId(token);
+            String userRole = jwtService.extractRole(token);
+
+            ForumThread thread = forumThreadService.toggleLockThread(id, userId, userRole, true);
             return ResponseEntity.ok(buildThreadResponse(thread));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ErrorResponse("Thread não encontrada"));
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse("Não autorizado"));
         }
     }
 
     @PatchMapping("/{id}/unlock")
-    public ResponseEntity<?> unlockThread(@PathVariable Long id) {
+    public ResponseEntity<?> unlockThread(@PathVariable Long id,
+                                          @RequestHeader("Authorization") String authHeader) {
         try {
-            ForumThread thread = forumThreadService.toggleLockThread(id, false);
+            String token = extractTokenFromHeader(authHeader);
+            Long userId = jwtService.extractUserId(token);
+            String userRole = jwtService.extractRole(token);
+
+            ForumThread thread = forumThreadService.toggleLockThread(id, userId, userRole, false);
             return ResponseEntity.ok(buildThreadResponse(thread));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ErrorResponse("Thread não encontrada"));
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse("Não autorizado"));
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateThread(@PathVariable Long id,
+                                        @RequestBody UpdateThreadRequest request,
+                                        @RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = extractTokenFromHeader(authHeader);
+            Long userId = jwtService.extractUserId(token);
+            String userRole = jwtService.extractRole(token);
+
+            ForumThread thread = forumThreadService.updateThread(id, userId, userRole, request.getTitle(), request.getContent());
+            return ResponseEntity.ok(buildThreadResponse(thread));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse("Não autorizado"));
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteThread(@PathVariable Long id,
+                                        @RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = extractTokenFromHeader(authHeader);
+            Long userId = jwtService.extractUserId(token);
+            String userRole = jwtService.extractRole(token);
+
+            forumThreadService.deleteThread(id, userId, userRole);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse("Não autorizado"));
         }
     }
 
@@ -129,6 +192,13 @@ public class ForumThreadController {
                 thread.getCreatedAt(),
                 thread.getUpdatedAt()
         );
+    }
+
+    private String extractTokenFromHeader(String authHeader) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7);
+        }
+        throw new IllegalArgumentException("Token não fornecido");
     }
 }
 

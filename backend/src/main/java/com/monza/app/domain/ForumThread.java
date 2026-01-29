@@ -55,11 +55,14 @@ public class ForumThread {
     public Long getBoardId() {return boardId;}
     public Long getUserId() {return userId;}
     public String getTitle() {return title;}
+    public void setTitle(String title) {this.title = title;}
     public String getContent() {return content;}
+    public void setContent(String content) {this.content = content;}
     public boolean isPinned() {return isPinned;}
     public boolean isLocked() {return isLocked;}
     public LocalDateTime getCreatedAt() {return createdAt;}
     public LocalDateTime getUpdatedAt() {return updateAt;}
+    public void setUpdatedAt(LocalDateTime updateAt) {this.updateAt = updateAt;}
 }
 
 // -
