@@ -224,6 +224,19 @@ class API {
             method: 'DELETE'
         });
     }
+
+    // Vote endpoint
+    static async votePost(postId, value) {
+        const response = await this.request(`/posts/${postId}/vote`, {
+            method: 'POST',
+            body: JSON.stringify({ value })
+        });
+        if (!response.ok) {
+            return response;
+        }
+        // parse json
+        return response.json();
+    }
 }
 
 // ============================================
@@ -600,6 +613,12 @@ async function showPosts(threadId) {
                                 </div>
                             </div>
                             <div class="post-content" id="post-content-${post.id}">${escapeHtml(post.content)}</div>
+                            <div class="post-votes">
+                                <button class="btn-vote btn-up ${post.currentUserVote === 1 ? 'voted' : ''}" onclick="handleVote(${post.id}, 1)">▲</button>
+                                <span class="vote-score up">${post.upvoteCount || 0}</span>
+                                <button class="btn-vote btn-down ${post.currentUserVote === -1 ? 'voted' : ''}" onclick="handleVote(${post.id}, -1)">▼</button>
+                                <span class="vote-score down">${post.downvoteCount || 0}</span>
+                            </div>
                         </div>
                     `;
                 }).join('')}
@@ -713,6 +732,51 @@ async function handleDeletePost(postId) {
         }
     } catch (error) {
         showNotification(error.message || 'Erro ao deletar post', 'error');
+    }
+}
+
+// handler para votar em um post (upvote=1, downvote=-1)
+async function handleVote(postId, value) {
+    if (!Auth.isAuthenticated()) {
+        showAuthModal('login');
+        return;
+    }
+
+    try {
+        const result = await API.votePost(postId, value);
+        if (!result || result.message) {
+            showNotification(result && result.message ? result.message : 'Erro ao votar', 'error');
+            return;
+        }
+
+        // result is VoteResponse { upvoteCount, downvoteCount, currentUserVote }
+        const postEl = document.querySelector(`[data-post-id="${postId}"]`);
+        if (postEl) {
+            const upEl = postEl.querySelector('.vote-score.up');
+            const downEl = postEl.querySelector('.vote-score.down');
+            const upBtn = postEl.querySelector('.btn-up');
+            const downBtn = postEl.querySelector('.btn-down');
+
+            if (upEl) upEl.textContent = result.upvoteCount;
+            if (downEl) downEl.textContent = result.downvoteCount;
+
+            if (result.currentUserVote === 1) {
+                upBtn.classList.add('voted');
+                downBtn.classList.remove('voted');
+            } else if (result.currentUserVote === -1) {
+                upBtn.classList.remove('voted');
+                downBtn.classList.add('voted');
+            } else {
+                upBtn.classList.remove('voted');
+                downBtn.classList.remove('voted');
+            }
+        } else {
+            // fallback: recarrega view
+            navigate('posts', currentView.data);
+        }
+
+    } catch (error) {
+        showNotification('Erro ao votar', 'error');
     }
 }
 

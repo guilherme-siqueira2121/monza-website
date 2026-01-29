@@ -5,6 +5,8 @@ import com.monza.app.api.dto.ErrorResponse;
 import com.monza.app.api.dto.PostResponse;
 import com.monza.app.api.dto.UpdatePostRequest;
 import com.monza.app.api.dto.UserResponse;
+import com.monza.app.api.dto.VoteRequest;
+import com.monza.app.api.dto.VoteResponse;
 import com.monza.app.domain.Post;
 import com.monza.app.domain.User;
 import com.monza.app.service.PostService;
@@ -41,7 +43,7 @@ public class PostController {
             );
 
             return ResponseEntity.status(HttpStatus.CREATED).body(
-                    buildPostResponse(post)
+                    buildPostResponse(post, null)
             );
 
         } catch (IllegalArgumentException e) {
@@ -51,10 +53,18 @@ public class PostController {
 
     // list the posts in the thread
     @GetMapping("/thread/{threadId}")
-    public ResponseEntity<List<PostResponse>> getPostsByThread(@PathVariable Long threadId) {
+    public ResponseEntity<List<PostResponse>> getPostsByThread(@PathVariable Long threadId,
+                                                               @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        Long uid = null;
+        if (authHeader != null) {
+            String token = extractTokenFromHeader(authHeader);
+            try { uid = jwtService.extractUserId(token); } catch (Exception ignored) {}
+        }
+        final Long currentUserId = uid;
+
         List<PostResponse> posts = postService.findPostsByThread(threadId)
                 .stream()
-                .map(this::buildPostResponse)
+                .map(p -> buildPostResponse(p, currentUserId))
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(posts);
@@ -71,7 +81,7 @@ public class PostController {
             String userRole = jwtService.extractRole(token);
 
             Post updatedPost = postService.updatePost(id, userId, request.getContent(), userRole);
-            return ResponseEntity.ok(buildPostResponse(updatedPost));
+            return ResponseEntity.ok(buildPostResponse(updatedPost, userId));
 
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
@@ -99,6 +109,25 @@ public class PostController {
         }
     }
 
+    // vote endpoint
+    @PostMapping("/{id}/vote")
+    public ResponseEntity<?> votePost(@PathVariable("id") Long postId,
+                                      @RequestBody VoteRequest request,
+                                      @RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = extractTokenFromHeader(authHeader);
+            Long userId = jwtService.extractUserId(token);
+
+            VoteResponse resp = postService.votePost(postId, userId, request.getValue());
+            return ResponseEntity.ok().body(resp);
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse("Não autorizado"));
+        }
+    }
+
     // extract token from Authorization header
     private String extractTokenFromHeader(String authHeader) {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
@@ -108,12 +137,19 @@ public class PostController {
     }
 
     // construct a PostResponse with related data
-    private PostResponse buildPostResponse(Post post) {
+    private PostResponse buildPostResponse(Post post, Long currentUserId) {
         User author = userService.findById(post.getUserId()).orElse(null);
 
         UserResponse authorResponse = author != null ?
                 new UserResponse(author.getId(), author.getUsername(),
                         author.getUserCode(), author.getRole(), author.getCreatedAt()) : null;
+
+        int up = postService.getUpvotes(post.getId());
+        int down = postService.getDownvotes(post.getId());
+        Integer currentVote = null;
+        if (currentUserId != null) {
+            currentVote = postService.getUserVoteForPost(post.getId(), currentUserId);
+        }
 
         return new PostResponse(
                 post.getId(),
@@ -121,7 +157,10 @@ public class PostController {
                 authorResponse,
                 post.getReplyToPostId(),
                 post.getCreatedAt(),
-                post.getUpdatedAt()
+                post.getUpdatedAt(),
+                up,
+                down,
+                currentVote
         );
     }
 }

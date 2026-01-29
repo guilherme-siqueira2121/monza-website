@@ -70,6 +70,24 @@ CREATE TABLE posts (
 COMMENT ON TABLE posts IS 'Posts/Respostas dentro de threads';
 COMMENT ON COLUMN posts.reply_to_post_id IS 'ID do post sendo respondido (quote/reply)';
 
+-- votes table (upvote/downvote)
+CREATE TABLE votes (
+    id BIGSERIAL PRIMARY KEY,
+    post_id BIGINT NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    value SMALLINT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_vote_value CHECK (value IN (1, -1)),
+    CONSTRAINT uniq_post_user_vote UNIQUE (post_id, user_id)
+);
+
+COMMENT ON TABLE votes IS 'Votes (upvote/downvote) por usuario por post';
+COMMENT ON COLUMN votes.value IS '1 para upvote, -1 para downvote';
+
+-- indices
+CREATE INDEX idx_votes_post
+    ON votes(post_id);
+
 -- indices
 CREATE INDEX idx_threads_board_pinned_updated
     ON threads(board_id, is_pinned DESC, updated_at DESC);
@@ -114,3 +132,4 @@ INSERT INTO threads (board_id, user_id, title, content, is_pinned) VALUES
 
 INSERT INTO posts (thread_id, user_id, content) VALUES
     (1, 1, 'Primeira resposta! Vamos comecar as discussoes.');
+
